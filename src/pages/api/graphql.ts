@@ -2,6 +2,9 @@ import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateNextHandler } from '@as-integrations/next';
 import { gql } from 'graphql-tag';
 import { createClient } from '@supabase/supabase-js';
+import allowCors from "../../lib/cors";
+
+
 
 export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
@@ -91,7 +94,9 @@ const typeDefs = gql`
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  introspection: true
 });
 
-export default startServerAndCreateNextHandler(server);
+
+export default allowCors(startServerAndCreateNextHandler(server))
