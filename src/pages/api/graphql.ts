@@ -23,7 +23,7 @@ type Item = {
 const resolvers = {
   Query: {
     items: async () => {
-      const { data } = await supabase.from('sample').select();
+      const { data } = await supabase.from('sample').select().order('id');
       return data
     },
     item: async (_:any, args: { id: number }) => {
