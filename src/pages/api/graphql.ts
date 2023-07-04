@@ -4,8 +4,6 @@ import { gql } from 'graphql-tag';
 import { createClient } from '@supabase/supabase-js';
 import allowCors from "../../lib/cors";
 
-
-
 export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
@@ -20,10 +18,24 @@ type Item = {
   image?: string;
 }
 
+type ItemPayload = {
+  name?: string;
+  email?: string;
+  count?: number;
+  active?: boolean;
+  image?: string;
+}
+
 const resolvers = {
   Query: {
-    items: async () => {
-      const { data } = await supabase.from('sample').select().order('id');
+    items: async (_: any, args: { limit?: number }) => {
+      const query = supabase.from('sample').select().order('id', { ascending: false })
+
+      if (args.limit) {
+        query.limit(args.limit)
+      }
+
+      const { data } = await query;
       return data
     },
     item: async (_:any, args: { id: number }) => {
@@ -33,25 +45,26 @@ const resolvers = {
     }
   },
   Mutation: {
-    add: async (_:any, args: Item) => {
+    add: async (_:any, args: { payload: ItemPayload }) => {
       const payload = {
-        name: args.name || '',
-        email: args.email || '',
-        count: args.count || 0,
-        active: args.active || false,
-        image: args.image || ''
+        name: args.payload.name || '',
+        email: args.payload.email || '',
+        count: args.payload.count || 0,
+        active: args.payload.active || false,
+        image: args.payload.image || ''
       }
 
       const { data } = await supabase.from('sample').insert(payload).select().single();
 
       return data;
     },
-    update: async (_:any, args: Item) => {
+    update: async (_:any, args: { id: number, payload: ItemPayload }) => {
       const payload = {
-        name: args.name,
-        email: args.email,
-        count: args.count,
-        active: args.active
+        name: args.payload.name,
+        email: args.payload.email,
+        count: args.payload.count,
+        image: args.payload.image,
+        active: args.payload.active
       }
       const { data } = await supabase.from('sample').update(payload).eq('id', args.id).select().single();
 
@@ -62,28 +75,27 @@ const resolvers = {
 
 const typeDefs = gql`
   type Query {
-    items: [Item]
+    items(limit: Int): [Item]
     item(id: Int!): Item
   }
   type Mutation {
     add(
-      name: String
-      email: String
-      active: Boolean
-      image: String
-      count: Int
+        payload: ItemPayload
     ): Item
     update(
       id: Int!
-      name: String
-      email: String
-      active: Boolean
-      image: String
-      count: Int
+      payload: ItemPayload
     ): Item
   }
   type Item {
     id: Int!
+    name: String
+    email: String
+    active: Boolean
+    image: String
+    count: Int
+  }
+  input ItemPayload {
     name: String
     email: String
     active: Boolean
