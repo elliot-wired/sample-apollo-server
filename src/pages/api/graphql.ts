@@ -36,7 +36,8 @@ const resolvers = {
       }
 
       const { data } = await query;
-      return { item: data, date: new Date().toISOString() }
+
+      return { items: data, date: new Date().toISOString() }
     },
     item: async (_:any, args: { id: number }) => {
       const { data } = await supabase.from('sample').select().eq('id', args.id).single();
@@ -75,7 +76,7 @@ const resolvers = {
 
 const typeDefs = gql`
   type Query {
-    items(limit: Int): [Response]
+    items(limit: Int): ItemsResponse
     item(id: Int!): Response
   }
   type Mutation {
@@ -86,6 +87,10 @@ const typeDefs = gql`
       id: Int!
       payload: ItemPayload
     ): Response
+  }
+  type ItemsResponse {
+      items: [Item]
+      date: String
   }
   type Response {
       item: Item,
