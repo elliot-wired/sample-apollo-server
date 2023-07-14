@@ -46,7 +46,8 @@ const resolvers = {
     },
     delayedSuccess: (_: any, args: { waitMs: number }) => {
       return new Promise(res => {
-        setTimeout(() => res(true), args.waitMs || 1000)
+        const ms = args.waitMs || 1000;
+        setTimeout(() => res(`Axios Success after ${ms}ms`), ms)
       })
     }
   },
@@ -83,7 +84,7 @@ const typeDefs = gql`
   type Query {
     items(limit: Int): ItemsResponse
     item(id: Int!): Response
-    delayedSuccess(waitMs: Int): Boolean
+    delayedSuccess(waitMs: Int): String
   }
   type Mutation {
     add(
