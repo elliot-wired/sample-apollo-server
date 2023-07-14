@@ -47,7 +47,7 @@ const resolvers = {
     delayedSuccess: (_: any, args: { waitMs: number }) => {
       return new Promise(res => {
         const ms = args.waitMs || 1000;
-        setTimeout(() => res(`Axios Success after ${ms}ms`), ms)
+        setTimeout(() => res(`Success after ${ms}ms`), ms)
       })
     }
   },
@@ -76,7 +76,7 @@ const resolvers = {
       const { data } = await supabase.from('sample').update(payload).eq('id', args.id).select().single();
 
       return { item: data, date: new Date().toISOString() }
-    }
+    },
   }
 };
 
