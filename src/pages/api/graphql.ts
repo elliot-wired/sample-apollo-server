@@ -86,7 +86,7 @@ const resolvers = {
     setActive: async (_: any, args: { active: boolean }) => {
       const { data } = await supabase.from('sample').update({ active: args.active }).eq('id', 1).select().single();
 
-      return data
+      return { item: data, date: new Date().toISOString() }
     }
   }
 };
