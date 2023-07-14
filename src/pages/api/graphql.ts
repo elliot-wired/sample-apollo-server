@@ -47,7 +47,7 @@ const resolvers = {
     delayedSuccess: (_: any, args: { waitMs: number }) => {
       return new Promise(res => {
         const ms = args.waitMs || 1000;
-        setTimeout(() => res(`Success after ${ms}ms`), ms)
+        setTimeout(() => res(`Revalidated Success after ${ms}ms`), ms)
       })
     }
   },
