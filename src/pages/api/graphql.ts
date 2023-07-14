@@ -44,11 +44,17 @@ const resolvers = {
 
       return { item: data, date: new Date().toISOString() }
     },
-    delayedSuccess: (_: any, args: { waitMs: number }) => {
-      return new Promise(res => {
-        const ms = args.waitMs || 1000;
-        setTimeout(() => res(`Revalidated Success after ${ms}ms`), ms)
+    delayedSuccess: async (_: any, args: { waitMs: number }) => {
+      const ms = args.waitMs || 1000;
+
+      await new Promise(res => {
+        setTimeout(() => res(true), ms)
       })
+
+      const { data } = await supabase.from('sample').select().eq('id', 1).single();
+      const active = data.active
+
+      return `Success after ${ms}ms + active is ${active}`
     }
   },
   Mutation: {
@@ -77,6 +83,11 @@ const resolvers = {
 
       return { item: data, date: new Date().toISOString() }
     },
+    setActive: async (_: any, args: { active: boolean }) => {
+      const { data } = await supabase.from('sample').update({ active: args.active }).eq('id', 1).select().single();
+
+      return data
+    }
   }
 };
 
@@ -94,6 +105,7 @@ const typeDefs = gql`
       id: Int!
       payload: ItemPayload
     ): Response
+    setActive(active: Boolean): Response
   }
   type ItemsResponse {
       items: [Item]
