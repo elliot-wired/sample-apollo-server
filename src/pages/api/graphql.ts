@@ -43,6 +43,11 @@ const resolvers = {
       const { data } = await supabase.from('sample').select().eq('id', args.id).single();
 
       return { item: data, date: new Date().toISOString() }
+    },
+    delayedSuccess: (_: any, args: { waitMs: number }) => {
+      return new Promise(res => {
+        setTimeout(() => res(true), args.waitMs || 1000)
+      })
     }
   },
   Mutation: {
@@ -78,6 +83,7 @@ const typeDefs = gql`
   type Query {
     items(limit: Int): ItemsResponse
     item(id: Int!): Response
+    delayedSuccess(waitMs: Int): Boolean
   }
   type Mutation {
     add(
