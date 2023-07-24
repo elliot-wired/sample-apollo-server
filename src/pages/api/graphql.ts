@@ -28,7 +28,7 @@ type ItemPayload = {
 
 const resolvers = {
   Query: {
-    items: async (_: any, args: { limit?: number, sort?: 'DEFAULT' | 'COUNT' }) => {
+    items: async (_: any, args: { limit?: number, sort?: 'DEFAULT' | 'COUNT', page?: number }) => {
       const query = supabase.from('sample').select()
 
       if (args.sort === 'COUNT') {
@@ -37,9 +37,13 @@ const resolvers = {
         query.order('id', { ascending: false })
       }
 
-      if (args.limit) {
-        query.limit(args.limit)
-      }
+      const page = args.page || 0;
+      const limit = args.limit || 0;
+
+      const from = page * limit;
+      const to = (page + 1) * limit;
+
+      query.range(from, to);
 
       const { data } = await query;
 
@@ -102,7 +106,7 @@ const resolvers = {
 
 const typeDefs = gql`
   type Query {
-    items(limit: Int, sort: SORT_METHOD ): ItemsResponse
+    items(limit: Int, page: Int, sort: SORT_METHOD ): ItemsResponse
     item(id: Int!): Response
     delayedSuccess(waitMs: Int): String
   }
