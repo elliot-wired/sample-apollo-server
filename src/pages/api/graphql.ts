@@ -29,10 +29,12 @@ type ItemPayload = {
 const resolvers = {
   Query: {
     items: async (_: any, args: { limit?: number, sort?: 'DEFAULT' | 'COUNT' }) => {
-      const query = supabase.from('sample').select().order('id', { ascending: false })
+      const query = supabase.from('sample').select()
 
       if (args.sort === 'COUNT') {
         query.order('count')
+      } else {
+        query.order('id', { ascending: false })
       }
 
       if (args.limit) {
