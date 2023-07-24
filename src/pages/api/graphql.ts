@@ -41,7 +41,7 @@ const resolvers = {
       const limit = args.limit || 0;
 
       const from = page * limit;
-      const to = (page + 1) * limit;
+      const to = (page + 1) * limit - 1;
 
       if (from || to) {
         query.range(from, to);
