@@ -28,8 +28,12 @@ type ItemPayload = {
 
 const resolvers = {
   Query: {
-    items: async (_: any, args: { limit?: number }) => {
+    items: async (_: any, args: { limit?: number, sort?: 'DEFAULT' | 'COUNT' }) => {
       const query = supabase.from('sample').select().order('id', { ascending: false })
+
+      if (args.sort === 'COUNT') {
+        query.order('count')
+      }
 
       if (args.limit) {
         query.limit(args.limit)
@@ -87,13 +91,16 @@ const resolvers = {
       const { data } = await supabase.from('sample').update({ active: args.active }).eq('id', 1).select().single();
 
       return { item: data, date: new Date().toISOString() }
+    },
+    login: async (_: any, args: { id: string, password: string }) => {
+      return { token: 'LoginToken', expires: 24 * 60 * 60 * 1000 }
     }
   }
 };
 
 const typeDefs = gql`
   type Query {
-    items(limit: Int): ItemsResponse
+    items(limit: Int, sort: SORT_METHOD ): ItemsResponse
     item(id: Int!): Response
     delayedSuccess(waitMs: Int): String
   }
@@ -106,6 +113,7 @@ const typeDefs = gql`
       payload: ItemPayload
     ): Response
     setActive(active: Boolean): Response
+    login(user: Login): Token
   }
   type ItemsResponse {
       items: [Item]
@@ -130,6 +138,18 @@ const typeDefs = gql`
     image: String
     count: Int
   }
+  input Login {
+    id: String
+    password: String
+  }
+  type Token {
+    token: String
+    expires: Int
+  }
+  enum SORT_METHOD {
+      DEFUALT,
+      COUNT
+  }
 `;
 
 const server = new ApolloServer({
@@ -139,4 +159,10 @@ const server = new ApolloServer({
 });
 
 
-export default allowCors(startServerAndCreateNextHandler(server))
+export default allowCors(startServerAndCreateNextHandler(server, {
+  context: async (req, res) => {
+
+    console.log(req.headers)
+    return {req, res}
+  }
+}))
