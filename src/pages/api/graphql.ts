@@ -29,7 +29,7 @@ type ItemPayload = {
 const resolvers = {
   Query: {
     items: async (_: any, args: { limit?: number, sort?: 'DEFAULT' | 'COUNT', page?: number }) => {
-      const query = supabase.from('sample').select()
+      const query = supabase.from('sample').select('*', { count: 'exact' })
 
       if (args.sort === 'COUNT') {
         query.order('count')
@@ -47,9 +47,9 @@ const resolvers = {
         query.range(from, to);
       }
 
-      const { data } = await query;
+      const { data, count } = await query;
 
-      return { items: data, date: new Date().toISOString() }
+      return { items: data, date: new Date().toISOString(), count }
     },
     item: async (_:any, args: { id: number }) => {
       const { data } = await supabase.from('sample').select().eq('id', args.id).single();
@@ -102,6 +102,11 @@ const resolvers = {
     },
     login: async (_: any, args: { id: string, password: string }) => {
       return { token: 'LoginToken', expires: 24 * 60 * 60 * 1000 }
+    },
+    delete: async (_: any, args: { id: string }) => {
+      await supabase.from('sample').delete().eq('id', args.id);
+
+      return { success: true }
     }
   }
 };
@@ -122,10 +127,12 @@ const typeDefs = gql`
     ): Response
     setActive(active: Boolean): Response
     login(user: Login): Token
+    delete(id: Int!): DeleteResponse
   }
   type ItemsResponse {
       items: [Item]
       date: String
+      count: Int
   }
   type Response {
       item: Item,
@@ -153,6 +160,9 @@ const typeDefs = gql`
   type Token {
     token: String
     expires: Int
+  }
+  type DeleteResponse {
+    success: Boolean
   }
   enum SORT_METHOD {
       DEFUALT,
